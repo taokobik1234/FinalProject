@@ -9,17 +9,15 @@ public class PlayerManager : MonoBehaviour
     public PlayerMovement playerMovement;
     public PlayerGrounded playerGrounded;
     public PlayerLadderMovement playerLadderMovement;
-
     public CharacterController characterController;
-    public PowerGauge powerGauge;
     public PickUpDropThrow pickUpDropThrow;
-
     public Vector3 movement;
 
     private void Awake()
     {
-        
+
     }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,7 +27,6 @@ public class PlayerManager : MonoBehaviour
         playerGrounded = GetComponent<PlayerGrounded>();
         playerLadderMovement = GetComponent<PlayerLadderMovement>();
         characterController = GetComponent<CharacterController>();
-        powerGauge = GetComponentInChildren<PowerGauge>();
         pickUpDropThrow = GetComponent<PickUpDropThrow>();
     }
 
@@ -39,13 +36,12 @@ public class PlayerManager : MonoBehaviour
         playerGrounded.GroundedCheck();
         playerMovement.Move();
         movement = playerLadderMovement.HandleLadderMovement(movement);
+
         if (pickUpDropThrow.recoiling)
         {
             movement = pickUpDropThrow.recoil(movement);
         }
+
         characterController.Move(movement);
-        if (powerGauge != null) {
-            powerGauge.AdjustPower();
-        }
     }
 }

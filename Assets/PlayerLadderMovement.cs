@@ -35,8 +35,8 @@ public class PlayerLadderMovement : MonoBehaviour
     /// <param name="other"></param>
     private void OnTriggerEnter(Collider other)
     {
-        
-        if(other.gameObject.CompareTag("Ladder"))
+        Debug.Log("Trigger Enter detected with: " + other.gameObject.name + " Tag: " + other.tag);
+        if (other.gameObject.CompareTag("Ladder"))
         {
             Debug.Log("On ladder");
             climbingLadder = true;

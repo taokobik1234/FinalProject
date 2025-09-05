@@ -9,34 +9,38 @@ public class PickUpDropThrow : MonoBehaviour
     [SerializeField] private LayerMask mask;
     [SerializeField] private float throwForce = 10;
     PlayerInventory inventory;
-    PowerGauge powerGauge;
 
     public float recoilPower { private set; get; }
-    public bool recoiling {private set; get;}
+    public bool recoiling { private set; get; }
     public float recoilStartTime { private set; get; }
     [SerializeField] float recoilThreshold = 0.4f;
     [SerializeField] float recoilStrength = 10;
+
     bool cheese = false;
+
     void Start()
     {
         cam = Camera.main.gameObject;
         inventory = GetComponent<PlayerInventory>();
-        powerGauge = GetComponentInChildren<PowerGauge>();
-        if(cheese) { return; }
+        if (cheese) { return; }
         GameEventsManager.Instance.playerEvents.onFire += OnThrow;
     }
 
     private void OnEnable()
     {
-        if(GameEventsManager.Instance == null) { return; }
+        if (GameEventsManager.Instance == null) { return; }
         cheese = true;
         GameEventsManager.Instance.playerEvents.onFire += OnThrow;
     }
 
     private void OnDisable()
     {
-        GameEventsManager.Instance.playerEvents.onFire += OnThrow;
+        if (GameEventsManager.Instance != null)
+        {
+            GameEventsManager.Instance.playerEvents.onFire -= OnThrow;
+        }
     }
+
     public void OnPickUp()
     {
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
@@ -73,32 +77,35 @@ public class PickUpDropThrow : MonoBehaviour
             if (rb != null)
             {
                 rb.isKinematic = false;
-                if(powerGauge != null)
-                {
-                    rb.AddForce(cam.transform.forward * throwForce * rb.mass * powerGauge.slider.value, ForceMode.Impulse);
-                    recoiling = true;
-                    recoilPower = powerGauge.slider.value;
-                    recoilStartTime = Time.time;
-                }
-                else
-                {
-                    rb.AddForce(cam.transform.forward * throwForce * rb.mass, ForceMode.Impulse);
-                }
-                
+                rb.AddForce(cam.transform.forward * throwForce * rb.mass, ForceMode.Impulse);
+
+                // Set recoil properties for basic recoil effect
+                recoiling = true;
+                recoilPower = 1.0f; // Default power value
+                recoilStartTime = Time.time;
+
                 Debug.Log("Object Thrown");
             }
         }
-    }        
-    public Vector3 recoil(Vector3 movement)
-        {
-            if(recoilPower < powerGauge.slider.maxValue * recoilThreshold) { recoiling = false; return movement; }
-            Vector3 recoilDir = (-1 * transform.forward) * recoilPower * recoilStrength * Time.deltaTime;
-            if (Time.time - recoilStartTime > .2f) { recoiling = false; return movement; }
-            else
-            {
-                //Debug.Log("Recoiling");
-                return movement + recoilDir;
-            }
+    }
 
+    public Vector3 recoil(Vector3 movement)
+    {
+        if (recoilPower < recoilThreshold)
+        {
+            recoiling = false;
+            return movement;
         }
+
+        Vector3 recoilDir = (-1 * transform.forward) * recoilPower * recoilStrength * Time.deltaTime;
+        if (Time.time - recoilStartTime > .2f)
+        {
+            recoiling = false;
+            return movement;
+        }
+        else
+        {
+            return movement + recoilDir;
+        }
+    }
 }
